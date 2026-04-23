@@ -1,7 +1,8 @@
-mock==2.0.0
 svgpathtools==1.3.3
 PyObjC
+bleak
 
 # our own fork of this library, for pulling out manufacturer data from the BTLE advertisement.
-git+git://github.com/playi/Adafruit_Python_BluefruitLE@928669a#egg=Adafruit_BluefruitLE
+# NOTE: for Python 3 support, install a Python 3 compatible Adafruit_BluefruitLE fork/branch.
+git+https://github.com/playi/Adafruit_Python_BluefruitLE@928669a#egg=Adafruit_BluefruitLE
 

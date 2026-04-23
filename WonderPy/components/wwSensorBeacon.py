@@ -6,9 +6,6 @@ _rt  = WWRobotConstants.RobotType
 _expected_json_fields = (
     # the beacon sensor is a bit special, as we may invent empty ones.
 )
-import sys
-if sys.version_info > (3,):
-    xrange = range
 
 
 class WWSensorBeacon(WWSensorBase):
@@ -130,7 +127,7 @@ class WWSensorBeacon(WWSensorBase):
             old_dbi = self._data_buffer_index
             self._data_buffer = [None] * value
             self._data_buffer_index = 0
-            for n in xrange(min(len(old_db), value)):
+            for n in range(min(len(old_db), value)):
                 self.add_robot_type_value(old_db[n])
             self._data_buffer_index = old_dbi % value
 

@@ -1,5 +1,5 @@
 import unittest
-from mock import Mock
+from unittest.mock import Mock
 from WonderPy.core.wwConstants import WWRobotConstants
 from test.robotTestUtil import RobotTestUtil
 from WonderPy.components.wwCommandAccessory import WWCommandAccessory

@@ -33,7 +33,7 @@ Please see the ["Issues" in github](https://github.com/playi/WonderPy/issues) fo
 # Setup
 ## Prerequisites
 1. MacOS
-2. Python 2.7
+2. Python 3.9+ (Python 3.11 recommended)
 3. Familiarity with python and the command-line
 
 
@@ -58,18 +58,28 @@ Installing pip tends to vary significantly from system to system, so we can't pr
 
   You may need to install XCode, visit the [Apple Developer site](https://developer.apple.com/download/more) and search for "Command Line Tools". Then download and install the appropriate file based on your version of macOS and XCode.
 
-  Some users may need to uninstall/reinstall Python 2.x afterwards, depending on their setup. (Since there are many ways python is installed, we don't provide instructions for that here)
+  Some users may need to reinstall Python 3 afterwards, depending on their setup. (Since there are many ways python is installed, we don't provide instructions for that here)
   
 4. **AdaFruit Python BTLE Package**  
-  The AdaFruit BTLE package is not hosted on PyPi, which makes it difficult to automatically install when this package is installed via pip. Additionally, this project requires a fork of that project by WonderWorkshop, which as of this writing has not been merged back into the main project.  
-  `pip install git+git://github.com/playi/Adafruit_Python_BluefruitLE@928669a#egg=Adafruit_BluefruitLE`
+  The AdaFruit BTLE package is not hosted on PyPi, which makes it difficult to automatically install when this package is installed via pip. Additionally, this project requires a WonderWorkshop fork that includes manufacturer-data support and Python 3 compatibility.  
+  `pip install git+https://github.com/playi/Adafruit_Python_BluefruitLE@928669a#egg=Adafruit_BluefruitLE`
 
 ## Create a new python virtual environment
-1. `virtualenv --python=/usr/bin/python2.7 --no-site-packages venv`
+1. `python3 -m venv venv`
 2. `source venv/bin/activate`
 
 ## Install WonderPy
 `pip install WonderPy`
+
+## Optional: use the Bleak backend
+On newer macOS systems (especially Apple Silicon), the legacy Adafruit backend may be unstable.
+WonderPy now includes an experimental Bleak backend:
+
+`WONDERPY_BLE_BACKEND=bleak python your_script.py`
+
+For quick connectivity testing:
+
+`python connect_dash_bleak_smoketest.py --connect-name "Stevie" --connect-ask`
 
 # Documentation
 Documentation is still also in Alpha stage.
@@ -130,9 +140,9 @@ Please see the ["Issues" in github](https://github.com/playi/WonderPy/issues) fo
 As of this writing, the open issues are:
 
 * Only works with a single robot.
-* Only works with Python2.7.  
-  The limiting factor here is getting the AdaFruit BTLE package to run under Python3. There's evidence this is possible.
-* Once under Python3, update the concurrency model.
+* Python 3 migration is in progress.  
+  The main remaining risk is validating a Python 3 compatible AdaFruit BTLE build in real robot runs.
+* Concurrency model has been modernized for sensor wait/notify coordination, but should still be profiled under heavy command loads.
 * Flesh-out inline documentation.
 * Make the pip installation more standard.
   Currently this requires a manual install of a github-based fork of the AdaFruit package.

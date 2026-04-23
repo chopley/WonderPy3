@@ -17,7 +17,7 @@ class WWSVG(object):
     def read_file(self, filename):
         paths, attributes = svg2paths(filename)
         cc = 0
-        for n in xrange(len(paths)):
+        for n in range(len(paths)):
             p = paths     [n]
             a = attributes[n]
             if 'id' in a:
@@ -30,7 +30,7 @@ class WWSVG(object):
 
     def all_paths(self):
         """returns an iterator over all named and un-named paths"""
-        return self.named_paths.values() + self.unnamed_paths
+        return list(self.named_paths.values()) + self.unnamed_paths
 
     def rotate(self, degrees, center=(0, 0)):
         """modifies all the contained SVG paths in-place by rotating them the given amount around the given point"""
@@ -39,7 +39,7 @@ class WWSVG(object):
         for k in self.named_paths.keys():
             self.named_paths[k] = self.named_paths[k].rotated(degrees, z)
 
-        for n in xrange(len(self.unnamed_paths)):
+        for n in range(len(self.unnamed_paths)):
             self.unnamed_paths[n] = self.unnamed_paths[n].rotated(degrees, z)
 
     def scale(self, factor, center=(0, 0)):
@@ -49,7 +49,7 @@ class WWSVG(object):
         for k in self.named_paths.keys():
             self.named_paths[k] = self.named_paths[k].scaled(factor, factor, z)
 
-        for n in xrange(len(self.unnamed_paths)):
+        for n in range(len(self.unnamed_paths)):
             self.unnamed_paths[n] = self.unnamed_paths[n].scaled(factor, factor, z)
 
     def translate(self, offset):
@@ -59,7 +59,7 @@ class WWSVG(object):
         for k in self.named_paths.keys():
             self.named_paths[k] = self.named_paths[k].translated(z)
 
-        for n in xrange(len(self.unnamed_paths)):
+        for n in range(len(self.unnamed_paths)):
             self.unnamed_paths[n] = self.unnamed_paths[n].translated(z)
 
     def center(self, on_point=(0, 0)):
@@ -139,7 +139,7 @@ class WWSVG(object):
         for sp in path.continuous_subpaths():
             robot_points = []
             num_points = int(math.ceil(sp.length() / units_per_point)) + 1
-            for n in xrange(num_points):
+            for n in range(num_points):
                 t = float(n) / float(num_points - 1)
                 robot_points.append(WWSVG.convert_svg_point_to_robot_point(sp.point(t)))
 

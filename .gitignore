@@ -8,3 +8,5 @@ develop-eggs/
 *.egg-info/
 dist/
 .DS_Store
+.venv_x86/
+.tmp_morseapi/

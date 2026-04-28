@@ -25,10 +25,15 @@ setuptools.setup(
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
         "Operating System :: MacOS",
-        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
     ),
     keywords=['robots', 'dash', 'dot', 'cue', 'wonder workshop', 'robotics', 'sketchkit',],
     test_suite='test',
-    install_requires=['mock', 'svgpathtools', 'PyObjC'],
-    # this also requires pip install git+git://github.com/playi/Adafruit_Python_BluefruitLE@928669a#egg=Adafruit_BluefruitLE
+    python_requires='>=3.9',
+    install_requires=['svgpathtools', 'PyObjC', 'bleak'],
+    # this also requires a Python 3 compatible fork of Adafruit_BluefruitLE.
 )

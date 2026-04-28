@@ -45,7 +45,7 @@ class WWPath(object):
 
         # scale
         scale_factor = float(rad) / max_len
-        for n in xrange(len(self.points)):
+        for n in range(len(self.points)):
             self.points[n] = wwMath.vec2_scale(self.points[n], scale_factor)
 
     # take self.points and return a corresponding list of poses.
@@ -62,7 +62,7 @@ class WWPath(object):
         apt_prev = 0
 
         # create quadruples. just populating position for now.
-        for n in xrange(len(self.points)):
+        for n in range(len(self.points)):
             # pos and angle for this point
             pos_curr = self.points[n]
             deg_curr = self._calc_theta_index_deg(n)

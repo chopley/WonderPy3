@@ -7,18 +7,13 @@ import sys
 import argparse
 import time
 import os
+import queue
 
 try:
     import Adafruit_BluefruitLE
 except ImportError:
     print("Unable to import module: Adafruit_BluefruitLE. You may need to install it manually. See the README.md for WonderPy.")
     raise
-
-
-if sys.version_info > (3, 0):
-    import queue
-else:
-    import Queue as queue
 
 from .wwRobot import WWRobot
 from .wwConstants import WWRobotConstants
@@ -85,10 +80,10 @@ class WWBTLEManager(object):
 
     class two_packet_wrappers(ctypes.Structure):
         _fields_ = [
-            ('packet1_bytes_num', ctypes.c_byte),
-            ('packet1_bytes'    , ctypes.c_byte * 20),
-            ('packet2_bytes_num', ctypes.c_byte),
-            ('packet2_bytes'    , ctypes.c_byte * 20),
+            ('packet1_bytes_num', ctypes.c_ubyte),
+            ('packet1_bytes'    , ctypes.c_ubyte * 20),
+            ('packet2_bytes_num', ctypes.c_ubyte),
+            ('packet2_bytes'    , ctypes.c_ubyte * 20),
         ]
 
     def _load_HAL(self):
@@ -104,10 +99,10 @@ class WWBTLEManager(object):
         return char_array.from_buffer(ba)
 
     @staticmethod
-    def string_into_c_byte_array(str, cba):
+    def string_into_c_byte_array(data, cba):
         n = 0
-        for c in str:
-            cba[n] = ord(c)
+        for c in data:
+            cba[n] = c if isinstance(c, int) else ord(c)
             n += 1
 
     def scan_and_connect(self):
@@ -217,7 +212,7 @@ class WWBTLEManager(object):
 
         if len(devices) == 0:
             print("no suitable robots found!")
-            quit()
+            return
 
         # find device with loudest signal
         loudest_device = None
@@ -230,19 +225,19 @@ class WWBTLEManager(object):
         else:
             if self._args.connect_ask:
                 print("Suitable robots:")
-                map = {}
+                choice_map = {}
                 for d in devices:
                     r = WWRobot(d)
-                    n = len(map) + 1
-                    map[str(n)] = d
+                    n = len(choice_map) + 1
+                    choice_map[str(n)] = d
                     icon = u'📶' if d == loudest_device else u'⏹'
                     print("%2d. %s %14s '%s'" % (n, icon, r.robot_type_name, r.name))
 
                 device = None
                 while device is None:
-                    user_choice = raw_input("Enter [%d - %d]: " % (1, len(devices)))
-                    if user_choice in map:
-                        device = map[user_choice]
+                    user_choice = input("Enter [%d - %d]: " % (1, len(devices)))
+                    if user_choice in choice_map:
+                        device = choice_map[user_choice]
                     elif user_choice == '':
                         device = loudest_device
                     else:
@@ -305,6 +300,8 @@ class WWBTLEManager(object):
                 pw.packet1_bytes_num = len(p1)
                 pw.packet2_bytes_num =      0
                 json_string = self.libHAL.packets2Json(pw)
+                if isinstance(json_string, bytes):
+                    json_string = json_string.decode("utf-8")
                 self._sensor_queue.put(json.loads(json_string))
                 self.robot._sensor_packet_1 = None
 
@@ -319,6 +316,8 @@ class WWBTLEManager(object):
                 WWBTLEManager.string_into_c_byte_array(self.robot._sensor_packet_2, pw.packet2_bytes)
                 pw.packet2_bytes_num = len(p2)
                 json_string = self.libHAL.packets2Json(pw)
+                if isinstance(json_string, bytes):
+                    json_string = json_string.decode("utf-8")
                 self._sensor_queue.put(json.loads(json_string))
                 self.robot._sensor_packet_1 = None
                 self.robot._sensor_packet_2 = None
@@ -358,11 +357,11 @@ class WWBTLEManager(object):
         ba[2] = CONNECTION_INTERVAL_MS
         self.char_cmd.write_value(ba)
 
-    def sendJson(self, dict):
-        if (len(dict) == 0):
+    def sendJson(self, payload):
+        if (len(payload) == 0):
             return
 
-        json_str = json.dumps(dict)
+        json_str = json.dumps(payload).encode("utf-8")
 
         packets = WWBTLEManager.two_packet_wrappers()
 

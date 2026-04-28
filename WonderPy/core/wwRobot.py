@@ -1,10 +1,6 @@
 import time
-import sys
-
-if sys.version_info > (3, 0):
-    import queue
-else:
-    import Queue as queue
+import threading
+import queue
 
 from WonderPy.core.wwConstants import WWRobotConstants
 from WonderPy.core.wwCommands import WWCommands
@@ -14,7 +10,10 @@ from WonderPy.util.wwPinger import WWPinger
 
 
 def reverse_lookup(table, value):
-    return table.keys()[table.values().index(value)]
+    for key, candidate in table.items():
+        if candidate == value:
+            return key
+    raise ValueError("Value not present in table: %r" % (value,))
 
 
 _rc = WWRobotConstants.RobotComponent
@@ -32,7 +31,7 @@ class WWRobot(object):
         self._command_queue = queue.Queue()
 
         self._sensor_count               = 0
-        self._queues_waiting_for_sensors = set()
+        self._sensor_condition           = threading.Condition()
 
         self._sensors           = WWSensors (self)
         self._commands          = WWCommands(self)
@@ -130,19 +129,28 @@ class WWRobot(object):
 
     @staticmethod
     def robot_type_from_manufacturer_data(manu_data):
-        mode = manu_data[0] & 0x03
-        if   manu_data[1] == 1 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_APP:
-            return WWRobotConstants.RobotType.WW_ROBOT_DASH
-        elif manu_data[1] == 1 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_BL:
-            return WWRobotConstants.RobotType.WW_ROBOT_DASH_DFU
-        elif manu_data[1] == 2 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_APP:
-            return WWRobotConstants.RobotType.WW_ROBOT_DOT
-        elif manu_data[1] == 2 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_BL:
-            return WWRobotConstants.RobotType.WW_ROBOT_DOT_DFU
-        elif manu_data[1] == 3 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_APP:
-            return WWRobotConstants.RobotType.WW_ROBOT_CUE
-        elif manu_data[1] == 3 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_BL:
-            return WWRobotConstants.RobotType.WW_ROBOT_CUE_DFU
+        # Older firmware/adapters expose [mode, type, ...], while some newer
+        # advertisements appear to expose type/mode at different offsets.
+        candidates = []
+        if len(manu_data) >= 2:
+            candidates.append((manu_data[1], manu_data[0] & 0x03))  # legacy layout
+        if len(manu_data) >= 3:
+            candidates.append((manu_data[0], manu_data[2] & 0x03))  # observed newer layout
+            candidates.append((manu_data[2], manu_data[1] & 0x03))  # defensive fallback
+
+        for robot_id, mode in candidates:
+            if robot_id == 1 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_APP:
+                return WWRobotConstants.RobotType.WW_ROBOT_DASH
+            elif robot_id == 1 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_BL:
+                return WWRobotConstants.RobotType.WW_ROBOT_DASH_DFU
+            elif robot_id == 2 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_APP:
+                return WWRobotConstants.RobotType.WW_ROBOT_DOT
+            elif robot_id == 2 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_BL:
+                return WWRobotConstants.RobotType.WW_ROBOT_DOT_DFU
+            elif robot_id == 3 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_APP:
+                return WWRobotConstants.RobotType.WW_ROBOT_CUE
+            elif robot_id == 3 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_BL:
+                return WWRobotConstants.RobotType.WW_ROBOT_CUE_DFU
 
         return WWRobotConstants.RobotType.WW_ROBOT_UNKNOWN
 
@@ -168,31 +176,20 @@ class WWRobot(object):
         self._sendJson(staged)
 
     def _parse_sensors(self, sensor_dictionary):
-        # make a copy of the set of waiters and then clear out the member set.
-        # we do this because once we do a put() to the waiters,
-        # we do this because once we do a put() to the waiters,
-        # they may re-insert new items in the waiters list by re-calling block_until_sensors().
-        waiters = self._queues_waiting_for_sensors
-        self._queues_waiting_for_sensors = set()
-
         # parse json into python structs
         self._sensors.parse(sensor_dictionary)
-        self._sensor_count += 1
+        with self._sensor_condition:
+            self._sensor_count += 1
+            self._sensor_condition.notify_all()
         self.pinger.tick()
-
-        # notify everyone who was waiting
-        for q in waiters:
-            q.put(None)
 
     @do_not_call_within_connect_or_sensors
     def block_until_sensors(self):
         """this blocks until the next sensor packet arrives"""
-        # create a new queue and add it to the set of waiters.
-        # this queue will only ever be used once.
-        q = queue.Queue()
-        self._queues_waiting_for_sensors.add(q)
-        # block until our queue gets something in it.
-        q.get()
+        with self._sensor_condition:
+            observed_count = self._sensor_count
+            while self._sensor_count == observed_count:
+                self._sensor_condition.wait()
 
     @do_not_call_within_connect_or_sensors
     def block_until_pose_idle(self):

@@ -129,19 +129,28 @@ class WWRobot(object):
 
     @staticmethod
     def robot_type_from_manufacturer_data(manu_data):
-        mode = manu_data[0] & 0x03
-        if   manu_data[1] == 1 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_APP:
-            return WWRobotConstants.RobotType.WW_ROBOT_DASH
-        elif manu_data[1] == 1 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_BL:
-            return WWRobotConstants.RobotType.WW_ROBOT_DASH_DFU
-        elif manu_data[1] == 2 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_APP:
-            return WWRobotConstants.RobotType.WW_ROBOT_DOT
-        elif manu_data[1] == 2 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_BL:
-            return WWRobotConstants.RobotType.WW_ROBOT_DOT_DFU
-        elif manu_data[1] == 3 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_APP:
-            return WWRobotConstants.RobotType.WW_ROBOT_CUE
-        elif manu_data[1] == 3 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_BL:
-            return WWRobotConstants.RobotType.WW_ROBOT_CUE_DFU
+        # Older firmware/adapters expose [mode, type, ...], while some newer
+        # advertisements appear to expose type/mode at different offsets.
+        candidates = []
+        if len(manu_data) >= 2:
+            candidates.append((manu_data[1], manu_data[0] & 0x03))  # legacy layout
+        if len(manu_data) >= 3:
+            candidates.append((manu_data[0], manu_data[2] & 0x03))  # observed newer layout
+            candidates.append((manu_data[2], manu_data[1] & 0x03))  # defensive fallback
+
+        for robot_id, mode in candidates:
+            if robot_id == 1 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_APP:
+                return WWRobotConstants.RobotType.WW_ROBOT_DASH
+            elif robot_id == 1 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_BL:
+                return WWRobotConstants.RobotType.WW_ROBOT_DASH_DFU
+            elif robot_id == 2 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_APP:
+                return WWRobotConstants.RobotType.WW_ROBOT_DOT
+            elif robot_id == 2 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_BL:
+                return WWRobotConstants.RobotType.WW_ROBOT_DOT_DFU
+            elif robot_id == 3 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_APP:
+                return WWRobotConstants.RobotType.WW_ROBOT_CUE
+            elif robot_id == 3 and mode == WWRobotConstants.RobotMode.ROBOT_MODE_BL:
+                return WWRobotConstants.RobotType.WW_ROBOT_CUE_DFU
 
         return WWRobotConstants.RobotType.WW_ROBOT_UNKNOWN
 

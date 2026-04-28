@@ -67,6 +67,7 @@ class WWBleakManager(object):
         self.delegate = delegate
         self.robot = None
         self.client = None
+        self._loop = None
         self._sensor_queue = queue.Queue()
         self._yaw = 0
         self._load_HAL()
@@ -105,15 +106,8 @@ class WWBleakManager(object):
         # Wonder device payload is in manufacturer-specific sections.
         # Prefer the largest payload if multiple keys are present.
         payload = max(adv.manufacturer_data.values(), key=len)
-        data = list(payload)
-        # CoreBluetooth may include company bytes before WW payload.
-        # Find a plausible offset where [mode, robotType] starts.
-        for offset in range(min(4, max(0, len(data) - 2))):
-            mode = data[offset] & 0x03
-            rtype = data[offset + 1]
-            if mode in (0, 1, 2, 3) and rtype in (1, 2, 3):
-                return data[offset:]
-        return data
+        # Keep raw payload bytes; WWRobot handles multiple observed layouts.
+        return list(payload)
 
     @staticmethod
     def _matches_service_uuids(adv):
@@ -180,12 +174,14 @@ class WWBleakManager(object):
 
     @staticmethod
     def _encode_signed_11(value):
-        # matches old drive command behavior from community implementations
+        # Dash drive payload uses 11-bit magnitude with sign bit in bit 11.
+        # Positive: 0x000..0x7FF
+        # Negative: 0x800 | magnitude
         ivalue = int(round(value))
-        ivalue = max(-2048, min(2048, ivalue))
+        ivalue = max(-2047, min(2047, ivalue))
         if ivalue < 0:
-            ivalue = 0x800 + ivalue
-        return ivalue
+            return 0x800 | (abs(ivalue) & 0x7FF)
+        return ivalue & 0x7FF
 
     @staticmethod
     def _clip_byte(value):
@@ -202,6 +198,40 @@ class WWBleakManager(object):
     @staticmethod
     def _cmd_bytes(cmd_id, payload):
         return bytes([cmd_id]) + bytes(payload)
+
+    @staticmethod
+    def _encode_move_payload(distance_cm=0.0, degrees=0.0, seconds=1.0, eight_byte=0x80):
+        # Reverse-engineered Dash "move" (0x23) payload format.
+        distance_mm = int(round(distance_cm * 10.0))
+        centiradians = int(round(math.radians(degrees) * 100.0))
+        time_measure = max(0, int(round(seconds * 1000.0)))
+
+        distance_low_byte = distance_mm & 0x00FF
+        distance_high_byte = (distance_mm & 0x3F00) >> 8
+
+        turn_low_byte = centiradians & 0x00FF
+        turn_high_byte = (centiradians & 0x0300) >> 2
+
+        sixth_byte = 0
+        seventh_byte = 0
+        sixth_byte |= distance_high_byte
+        sixth_byte |= turn_high_byte
+        if centiradians < 0:
+            seventh_byte = 0xC0
+
+        time_low_byte = time_measure & 0x00FF
+        time_high_byte = (time_measure & 0xFF00) >> 8
+
+        return [
+            distance_low_byte,
+            0x00,  # unknown/legacy reserved
+            turn_low_byte,
+            time_high_byte,
+            time_low_byte,
+            sixth_byte,
+            seventh_byte,
+            eight_byte,
+        ]
 
     async def _write_raw_command(self, cmd_id, payload):
         await self.client.write_gatt_char(CHAR_UUID_CMD, self._cmd_bytes(cmd_id, payload))
@@ -295,9 +325,23 @@ class WWBleakManager(object):
                 angular = float(args.get("angular_deg_s", 0.0))
                 lin = self._encode_signed_11(linear)
                 ang = self._encode_signed_11(angular)
-                b0 = lin & 0xFF
-                b1 = ang & 0xFF
-                b2 = ((lin & 0xF00) >> 8) | ((ang & 0xF00) >> 5)
+                # Dash "drive" command packing (from community reverse-engineering):
+                # straight: [lin_low, 0x00, lin_hi]
+                # spin:     [0x00, ang_low, ang_hi_shifted]
+                # mixed linear+angular is undocumented in this legacy path; we approximate
+                # by preferring wheel-drive compatible straight/spin dominant behavior.
+                if abs(angular) < 1e-6:
+                    b0 = lin & 0xFF
+                    b1 = 0x00
+                    b2 = (lin & 0x0F00) >> 8
+                elif abs(linear) < 1e-6:
+                    b0 = 0x00
+                    b1 = ang & 0xFF
+                    b2 = (ang & 0xFF00) >> 5
+                else:
+                    b0 = lin & 0xFF
+                    b1 = ang & 0xFF
+                    b2 = ((lin & 0x0F00) >> 8) | ((ang & 0xFF00) >> 5)
                 await self._write_raw_command(0x02, [b0, b1, b2])
             elif component_id == _rc.WW_COMMAND_BODY_WHEELS:
                 left = float(args.get("left_cm_s", 0.0))
@@ -306,10 +350,33 @@ class WWBleakManager(object):
                 angular = (right - left) / max(0.1, self.robot.wheelbase_cm) * math.degrees(1.0)
                 lin = self._encode_signed_11(linear)
                 ang = self._encode_signed_11(angular)
-                b0 = lin & 0xFF
-                b1 = ang & 0xFF
-                b2 = ((lin & 0xF00) >> 8) | ((ang & 0xF00) >> 5)
+                if abs(angular) < 1e-6:
+                    b0 = lin & 0xFF
+                    b1 = 0x00
+                    b2 = (lin & 0x0F00) >> 8
+                elif abs(linear) < 1e-6:
+                    b0 = 0x00
+                    b1 = ang & 0xFF
+                    b2 = (ang & 0xFF00) >> 5
+                else:
+                    b0 = lin & 0xFF
+                    b1 = ang & 0xFF
+                    b2 = ((lin & 0x0F00) >> 8) | ((ang & 0xFF00) >> 5)
                 await self._write_raw_command(0x02, [b0, b1, b2])
+            elif component_id == _rc.WW_COMMAND_BODY_POSE:
+                # Prefer move command for HAL-lite mode; this path has better-known
+                # behavior than json->packets conversion for signed drive/turn.
+                mode = int(args.get("mode", 2))
+                if mode == WWRobotConstants.WWPoseMode.WW_POSE_MODE_SET_GLOBAL:
+                    continue
+                distance_cm = float(args.get("x", 0.0))
+                # y (left/right translation) is not directly supported by move opcode.
+                degrees = float(args.get("degree", 0.0))
+                seconds = float(args.get("time", 1.0))
+                move_payload = self._encode_move_payload(distance_cm=distance_cm, degrees=degrees, seconds=seconds)
+                await self._write_raw_command(0x23, move_payload)
+            elif component_id == _rc.WW_COMMAND_BODY_COAST:
+                await self._write_raw_command(0x02, [0x00, 0x00, 0x00])
             elif component_id == _rc.WW_COMMAND_LIGHT_RGB_EYE:
                 await self._write_raw_command(0x03, [
                     self._clip_byte(args.get("r", 0)),
@@ -455,11 +522,20 @@ class WWBleakManager(object):
             await self.client.write_gatt_char(CHAR_UUID_CMD, p2)
 
     def sendJson(self, payload):
-        # WWRobot API expects a synchronous method; schedule on active loop.
-        loop = asyncio.get_running_loop()
-        loop.create_task(self._send_json_async(payload))
+        # WWRobot API expects a synchronous method; schedule onto BLE loop.
+        try:
+            loop = asyncio.get_running_loop()
+            loop.create_task(self._send_json_async(payload))
+            return
+        except RuntimeError:
+            pass
+
+        if self._loop is None:
+            raise RuntimeError("BLE event loop is not initialized; cannot send commands.")
+        asyncio.run_coroutine_threadsafe(self._send_json_async(payload), self._loop)
 
     async def _run_async(self):
+        self._loop = asyncio.get_running_loop()
         candidates = await self._scan_candidates()
         if len(candidates) == 0:
             print("no suitable robots found!")

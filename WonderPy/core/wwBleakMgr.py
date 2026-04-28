@@ -174,13 +174,11 @@ class WWBleakManager(object):
 
     @staticmethod
     def _encode_signed_11(value):
-        # Dash drive payload uses 11-bit magnitude with sign bit in bit 11.
-        # Positive: 0x000..0x7FF
-        # Negative: 0x800 | magnitude
+        # Stevie firmware accepts 11-bit two's complement signed values.
         ivalue = int(round(value))
-        ivalue = max(-2047, min(2047, ivalue))
+        ivalue = max(-1024, min(1023, ivalue))
         if ivalue < 0:
-            return 0x800 | (abs(ivalue) & 0x7FF)
+            ivalue = (1 << 11) + ivalue
         return ivalue & 0x7FF
 
     @staticmethod
@@ -200,11 +198,18 @@ class WWBleakManager(object):
         return bytes([cmd_id]) + bytes(payload)
 
     @staticmethod
-    def _encode_move_payload(distance_cm=0.0, degrees=0.0, seconds=1.0, eight_byte=0x80):
+    def _encode_move_payload(distance_cm=0.0, degrees=0.0, seconds=1.0, eight_byte=None):
         # Reverse-engineered Dash "move" (0x23) payload format.
-        distance_mm = int(round(distance_cm * 10.0))
+        raw_distance_mm = int(round(distance_cm * 10.0))
+        distance_mm = abs(raw_distance_mm)
         centiradians = int(round(math.radians(degrees) * 100.0))
         time_measure = max(0, int(round(seconds * 1000.0)))
+        if eight_byte is None:
+            # Backward linear moves without turning typically require 0x81.
+            if raw_distance_mm < 0 and centiradians == 0:
+                eight_byte = 0x81
+            else:
+                eight_byte = 0x80
 
         distance_low_byte = distance_mm & 0x00FF
         distance_high_byte = (distance_mm & 0x3F00) >> 8

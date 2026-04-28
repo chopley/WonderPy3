@@ -217,3 +217,27 @@ For current development on this machine, prefer:
 - `WONDERPY_BLE_BACKEND=bleak`
 
 and use the provided probe/test scripts while finalizing fallback motion/sensor parity.
+
+## Git Author + Push Notes
+
+If commit author identity needs to be corrected after local commits:
+
+1. Set repo-local author:
+
+```bash
+git config user.name "chopley"
+git config user.email "chopley@gmail.com"
+```
+
+2. Rewrite recent commit authors (example: last 4 commits):
+
+```bash
+GIT_COMMITTER_NAME="chopley" GIT_COMMITTER_EMAIL="chopley@gmail.com" \
+git rebase HEAD~4 --exec "git commit --amend --no-edit --author='chopley <chopley@gmail.com>'"
+```
+
+3. Push rewritten history safely:
+
+```bash
+git push --force-with-lease origin HEAD
+```

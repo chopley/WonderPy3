@@ -1,182 +1,137 @@
 # WonderPy
 
-This copy is **[actively maintained](https://github.com/chopley/WonderPy3)** and continues from Wonder Workshop’s open-source [WonderPy](https://github.com/playi/WonderPy), which last saw substantive upstream activity years ago. The **MIT License** applies (see [`LICENSE`](LICENSE)); **issues and PRs belong [here](https://github.com/chopley/WonderPy3/issues)**.
+**Canonical source code:** **[github.com/chopley/WonderPy3](https://github.com/chopley/WonderPy3)** (issues & pull requests belong there.)
 
-WonderPy is a Python package providing an interface to the WonderWorkshop robots Dash, Dot, and Cue.  It has fine-grained realtime access to all the robot's commands and sensors.  There is a companion repository with tutorials and examples.
+WonderPy is a Python package that talks to Wonder Workshop robots **Dash**, **Dot**, and **Cue**: commands and sensors are exposed at a granular level. Examples and tutorials live in **[WonderPyExamples](https://github.com/playi/WonderPyExamples)** (upstream; still usable).
 
-To get the most out of WonderPy, you should already have a beginner-level comfort with python and the command-line.
+This codebase descends from Wonder Workshop’s open-source **[WonderPy](https://github.com/playi/WonderPy)** (little recent upstream activity). The **MIT License** applies; see [`LICENSE`](LICENSE).
 
-# Project Status
-
-WonderPy remains at something like an "Alpha" release: fine for explorers who tolerate rough edges—and who can **[open issues or PRs here](https://github.com/chopley/WonderPy3/issues)** where this fork is maintained.
-
-* Command Categories:
-	* eyering
-	* head
-	* media
-	* monoLED
-	* body
-	* RGB
-	* accessory
-* Sensor Categories:
-	* accelerometer / gyroscope
-	* beacon
-	* buttons
-	* distance
-	* head angles
-	* pose
-	* speaker
-	* wheels
+Comfort with Python and the terminal is assumed.
 
 
-# Setup
-## Prerequisites
-1. MacOS
-2. Python 3.9+ (Python 3.11 recommended)
-3. Familiarity with python and the command-line
+## Project status
+
+Roughly **alpha** quality: good for experimentation; expect rough edges. Track work on the **[issue tracker](https://github.com/chopley/WonderPy3/issues)**.
+
+**Command categories:** eyering, head, media, monoLED, body, RGB, accessory  
+
+**Sensor categories:** accelerometer / gyroscope, beacon, buttons, distance, head angles, pose, speaker, wheels
 
 
-## Install hard dependencies
-All of these are *required*.
+## Setup
 
-1. **pip**  
-`pip` is the standard package manager for python. It's used to install packages such as WonderPy and AdaFruit BLE, below.  
-It can be tempting to skip installing this, but unfortunately it is required.  
-Installing pip tends to vary significantly from system to system, so we can't provide specific instructions it.  The best we can do is refer you to google to find the best match for your situation.  Here's [Google on the topic](https://www.google.com/search?q=how+to+install+pip).
+### Prerequisites
 
-2. **VirtualEnv**  
-  VirtualEnv is a system which enables you to be sure which version of Python you're running for WonderPy, and which packages are present.  
-      
-  `pip install virtualenv`  
-    
-  Depending on how you installed pip, you may need to  
-  `sudo pip install virtualenv`
+1. **macOS** (primary target today; broader OS support has been a longstanding goal upstream.)
+2. **Python 3.9+** (3.11+ recommended.)
+3. **pip**, **venv** (recommended), **[Xcode Command Line Tools](https://developer.apple.com/download/more)** (`xcode-select --install`).
 
-3. **XCode Command Line Tools**
-  `xcode-select --install`
+### Dependencies
 
-  You may need to install XCode, visit the [Apple Developer site](https://developer.apple.com/download/more) and search for "Command Line Tools". Then download and install the appropriate file based on your version of macOS and XCode.
+Install **pip / venv** the usual way for your machine ([pip install guidance](https://www.google.com/search?q=how+to+install+pip)).
 
-  Some users may need to reinstall Python 3 afterwards, depending on their setup. (Since there are many ways python is installed, we don't provide instructions for that here)
-  
-4. **AdaFruit Python BTLE Package**  
-  The AdaFruit BTLE package is not hosted on PyPi, which makes it difficult to automatically install when this package is installed via pip. Additionally, this project requires a WonderWorkshop fork that includes manufacturer-data support and Python 3 compatibility.  
-  `pip install git+https://github.com/playi/Adafruit_Python_BluefruitLE@928669a#egg=Adafruit_BluefruitLE`
+This project needs Wonder Workshop’s Python 3–compatible **[Adafruit_Python_BluefruitLE fork](https://github.com/playi/Adafruit_Python_BluefruitLE)** plus the packages declared in **`requirements.txt`**.
 
-## Create a new python virtual environment
-1. `python3 -m venv venv`
-2. `source venv/bin/activate`
+From a local checkout:
 
-## Install WonderPy
-`pip install WonderPy`
+```bash
+pip install -r requirements.txt
+```
 
-## Optional: use the Bleak backend
-On newer macOS systems (especially Apple Silicon), the legacy Adafruit backend may be unstable.
-WonderPy now includes an experimental Bleak backend:
+Or install Adafruit BLE alone:
 
-`WONDERPY_BLE_BACKEND=bleak python your_script.py`
+```bash
+pip install git+https://github.com/playi/Adafruit_Python_BluefruitLE@928669a#egg=Adafruit_BluefruitLE
+```
 
-For quick connectivity testing:
+### Virtual environment
 
-`python connect_dash_bleak_smoketest.py --connect-name "Stevie" --connect-ask`
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
 
-# Documentation
-Documentation is still also in Alpha stage.
+### Install this library from GitHub
 
-* [WonderPy readme](https://github.com/chopley/WonderPy3/blob/master/README.md)
+Use the **`WonderPy3`** repository (maintained fork), not PyPI installs that may lag or omit your changes:
 
-* [WonderPy Robot Reference Manual](https://github.com/chopley/WonderPy3/blob/master/doc/WonderPy.md)
+```bash
+pip install "WonderPy @ git+https://github.com/chopley/WonderPy3.git@master"
+```
 
-* [Tutorials and other examples](https://github.com/playi/WonderPyExamples)
+`setup.py` lists core dependencies (Bleak, PyObjC, etc.) but **not** Adafruit BLE; install that fork separately (above) **or** use a **`git clone`** plus `pip install -r requirements.txt` and then `pip install .` so everything resolves.
 
-# Getting Started
-The steps above install the core library.  
-There are many examples of using it separately in the github repository [playi/WonderPyExamples](https://github.com/playi/WonderPyExamples).  
-**It is *highly* recommended to look at those examples.**
+For local development against a clone:
 
-To test basic functionality, run these at the command-line, inside your fresh virtualenv:  
+```bash
+pip install -r requirements.txt
+pip install -e .
+```
 
-download the "01\_hello\_world.py" tutorial example:  
-`curl -o 01_hello_world.py https://raw.githubusercontent.com/playi/WonderPyExamples/master/tutorial/01_hello_world.py`  
+### Optional: Bleak backend
 
-run it:  
-`python 01_hello_world.py`
+On newer macOS (including Apple Silicon), the legacy Adafruit stack can be unstable. Experimental **Bleak** support:
 
-It should connect to any nearby robot and say hello !
+```bash
+WONDERPY_BLE_BACKEND=bleak python your_script.py
+```
 
-## Robot Connection Options
-Upon launching any of the examples, the app will scan for robots for at least 5 and at most 20 seconds.  After scanning, whichever robot had the highest signal strength (RSSI) will be connected to.  This is a reasonable approximation of connecting to the closest robot.
+Quick connectivity probe:
 
-### Connection Options:
+```bash
+python connect_dash_bleak_smoketest.py --connect-name "Stevie" --connect-ask
+```
+
+
+## Documentation
+
+- [Robot reference (`doc/WonderPy.md`)](doc/WonderPy.md) *(also on [GitHub](https://github.com/chopley/WonderPy3/blob/master/doc/WonderPy.md))*  
+- **[WonderPyExamples](https://github.com/playi/WonderPyExamples)** — tutorials strongly recommended  
+
+Download the hello-world snippet and run inside your activated venv:
+
+```bash
+curl -o 01_hello_world.py https://raw.githubusercontent.com/playi/WonderPyExamples/master/tutorial/01_hello_world.py
+python 01_hello_world.py
+```
+
+
+## Robot connection
+
+Scans typically run **about 5–20 seconds**, then selects the strongest RSSI match among filtered robots (“closest approx.”).
+
 ```
 [--connect-type cue | dot | dash]
-  filter for robots of the specified type/s
+  Only connect to the listed robot type(s).
 
 [--connect-name MY_ROBOT | MY_OTHER_ROBOT | ...]
-  filter for robots with the specified name/s
-  
+  Only robots with these Bluetooth names.
+
 [--connect-eager]
-  connect as soon as a qualified robot is discovered.  
-  do not wait the full scanning period.
-  if there are more than one robot with matching criteria,
-  the one with the best signal is still selected
-  
-[--connect-ask]  
-  show a list of available robots, and interactively ask for input.
-  indicates which has the highest signal strength.
-  
-``` 
+  Connect as soon as a match appears (still picks best RSSI if several qualify).
 
-### Connection  Examples:
-* Spend 5 seconds looking for all Cue and Dash robots which are named either "sammy" or "sally", and connect to the one with the best signal strength:  
-`python demos/roboFun.py --connect-type cue dash --connect-name sammy blippy sally`  
+[--connect-ask]
+  List qualifying robots interactively before connecting.
+```
 
-* Connect ASAP to any robot named 'orions robot', no matter what type of robot it is.  
-`python demos/roboFun.py --connect-eager --connect-name "orions robot"`  
+**Examples (scripts in repo):**
 
-# Known Issues and To-Do's
-See [Issues](https://github.com/chopley/WonderPy3/issues) for current bugs and todo items (this fork).  
-As of this writing, the open issues are:
+```bash
+python connect_dash_bleak_smoketest.py --connect-name "Stevie" --connect-ask
+python connect_dash_smoketest.py --connect-name "Stevie" --connect-ask
+```
 
-* Only works with a single robot.
-* Python 3 migration is in progress.  
-  The main remaining risk is validating a Python 3 compatible AdaFruit BTLE build in real robot runs.
-* Concurrency model has been modernized for sensor wait/notify coordination, but should still be profiled under heavy command loads.
-* Flesh-out inline documentation.
-* Make the pip installation more standard.
-  Currently this requires a manual install of a github-based fork of the AdaFruit package.
-* Port to Windows, Linux
-
-# Feedback - Survey
-How is WonderPy working for you ? We're eager to hear.  
-Please take time to [fill out a survey](https://www.surveymonkey.com/r/8KPTT3W)!   
-
-# Contribute
-Pull requests are welcome!  
-Please check the list of issues and todo's at [this WonderPy fork on github](https://github.com/chopley/WonderPy3/issues).  
-
-Additional examples in the [WonderPyExamples repository](https://github.com/playi/WonderPyExamples) would also be great:
-
-* Integrations with other cool packages
-* IoT integrations
-* Demos with the Sketch Kit accessory
-
-Feature requests for the API should be sent as [new Issues in github](https://github.com/chopley/WonderPy3/issues).  
-
-# Get Help
-### Report Bugs
-If there's a specific bug or problem with the API, please check the [outstanding issues in github](https://github.com/chopley/WonderPy3/issues) and if it's not already covered, create a new one.  
-
-### Ask for Advice
-If you have a more general question such as "how would I approach doing .." or you have a tip you'd like to share, please visit [stackoverflow](https://stackoverflow.com/) and be sure to tag your post with **wonderworkshop**.
-
-### Request Features
-Feature requests for the API should be sent as [new Issues in github](https://github.com/chopley/WonderPy3/issues).  
+For richer demos with the flags above (e.g. `--connect-type`, `--connect-eager`), use the **`roboFun.py`** and similar scripts shipped with **[WonderPyExamples](https://github.com/playi/WonderPyExamples)**—not in this repo.
 
 
-# Sharing your work ?
-Made something cool ? We'd love to see it !  
-Send your photos, videos, and links to developers@makewonder.com .
+## Contributing
 
-( Note, we can't promise a reply to all emails )
+Pull requests welcome: check **[open issues](https://github.com/chopley/WonderPy3/issues)** first. Extra examples belong in **[WonderPyExamples](https://github.com/playi/WonderPyExamples)** upstream when possible.
 
+
+## Troubleshooting / help
+
+- **Bugs:** [Issues on WonderPy3](https://github.com/chopley/WonderPy3/issues)  
+- **How-to questions:** [Stack Overflow](https://stackoverflow.com/) with tag **`wonderworkshop`** (community support; upstream brand).  
+
+Legacy Wonder Workshop outreach (survey, old contact flows) tied to **[playi/WonderPy](https://github.com/playi/WonderPy)** is no longer the right channel for maintained use of **`WonderPy3`**—prefer GitHub issues here.

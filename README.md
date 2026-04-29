@@ -1,15 +1,14 @@
 # WonderPy
 
+This copy is **[actively maintained](https://github.com/chopley/WonderPy)** and continues from Wonder Workshop’s open-source [WonderPy](https://github.com/playi/WonderPy), which last saw substantive upstream activity years ago. The **MIT License** applies (see [`LICENSE`](LICENSE)); **issues and PRs belong [here](https://github.com/chopley/WonderPy/issues)**.
+
 WonderPy is a Python package providing an interface to the WonderWorkshop robots Dash, Dot, and Cue.  It has fine-grained realtime access to all the robot's commands and sensors.  There is a companion repository with tutorials and examples.
 
 To get the most out of WonderPy, you should already have a beginner-level comfort with python and the command-line.
 
 # Project Status
-[![Build status](https://travis-ci.org/playi/WonderPy.svg?master)](https://travis-ci.org/playi)
 
-WonderPy is current at an "Alpha" release. It's ready to be tried out by folks who are willing to live with a few more rough-edges than one would want, and ideally who can provide constructive criticism.  
-
-Please see the ["Issues" in github](https://github.com/playi/WonderPy/issues) for an up-to-date list of known bugs and to-do items.  
+WonderPy remains at something like an "Alpha" release: fine for explorers who tolerate rough edges—and who can **[open issues or PRs here](https://github.com/chopley/WonderPy/issues)** where this fork is maintained.
 
 * Command Categories:
 	* eyering
@@ -84,9 +83,9 @@ For quick connectivity testing:
 # Documentation
 Documentation is still also in Alpha stage.
 
-* [WonderPy readme](https://github.com/playi/WonderPy/blob/master/README.md)
+* [WonderPy readme](https://github.com/chopley/WonderPy/blob/master/README.md)
 
-* [WonderPy Robot Reference Manual](https://github.com/playi/WonderPy/blob/master/doc/WonderPy.md)
+* [WonderPy Robot Reference Manual](https://github.com/chopley/WonderPy/blob/master/doc/WonderPy.md)
 
 * [Tutorials and other examples](https://github.com/playi/WonderPyExamples)
 
@@ -136,7 +135,7 @@ Upon launching any of the examples, the app will scan for robots for at least 5 
 `python demos/roboFun.py --connect-eager --connect-name "orions robot"`  
 
 # Known Issues and To-Do's
-Please see the ["Issues" in github](https://github.com/playi/WonderPy/issues) for an up-to-date list of known bugs and to-do items.  
+See [Issues](https://github.com/chopley/WonderPy/issues) for current bugs and todo items (this fork).  
 As of this writing, the open issues are:
 
 * Only works with a single robot.
@@ -154,7 +153,7 @@ Please take time to [fill out a survey](https://www.surveymonkey.com/r/8KPTT3W)!
 
 # Contribute
 Pull requests are welcome!  
-Please check the list of issues and todo's at the [WonderPy repository on github](https://github.com/playi/WonderPy/issues).  
+Please check the list of issues and todo's at [this WonderPy fork on github](https://github.com/chopley/WonderPy/issues).  
 
 Additional examples in the [WonderPyExamples repository](https://github.com/playi/WonderPyExamples) would also be great:
 
@@ -162,17 +161,17 @@ Additional examples in the [WonderPyExamples repository](https://github.com/play
 * IoT integrations
 * Demos with the Sketch Kit accessory
 
-Feature requests for the API should be sent as [new Issues in github](https://github.com/playi/WonderPy/issues).  
+Feature requests for the API should be sent as [new Issues in github](https://github.com/chopley/WonderPy/issues).  
 
 # Get Help
 ### Report Bugs
-If there's a specific bug or problem with the API, please check the [outstanding issues in github](https://github.com/playi/WonderPy/issues) and if it's not already covered, create a new one.  
+If there's a specific bug or problem with the API, please check the [outstanding issues in github](https://github.com/chopley/WonderPy/issues) and if it's not already covered, create a new one.  
 
 ### Ask for Advice
 If you have a more general question such as "how would I approach doing .." or you have a tip you'd like to share, please visit [stackoverflow](https://stackoverflow.com/) and be sure to tag your post with **wonderworkshop**.
 
 ### Request Features
-Feature requests for the API should be sent as [new Issues in github](https://github.com/playi/WonderPy/issues).  
+Feature requests for the API should be sent as [new Issues in github](https://github.com/chopley/WonderPy/issues).  
 
 
 # Sharing your work ?

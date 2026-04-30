@@ -80,7 +80,7 @@ WONDERPY_BLE_BACKEND=bleak python your_script.py
 Quick connectivity probe:
 
 ```bash
-python connect_dash_bleak_smoketest.py --connect-name "Stevie" --connect-ask
+python robot_validation/smoke/connect_dash_bleak_smoketest.py --connect-name "Stevie" --connect-ask
 ```
 
 ## Web UI (Dash Kid Controller)
@@ -145,8 +145,8 @@ Scans typically run **about 5–20 seconds**, then selects the strongest RSSI ma
 **Examples (scripts in repo):**
 
 ```bash
-python connect_dash_bleak_smoketest.py --connect-name "Stevie" --connect-ask
-python connect_dash_smoketest.py --connect-name "Stevie" --connect-ask
+python robot_validation/smoke/connect_dash_bleak_smoketest.py --connect-name "Stevie" --connect-ask
+python robot_validation/smoke/connect_dash_smoketest.py --connect-name "Stevie" --connect-ask
 ```
 
 For richer demos with the flags above (e.g. `--connect-type`, `--connect-eager`), use the **`roboFun.py`** and similar scripts shipped with **[WonderPyExamples](https://github.com/playi/WonderPyExamples)**—not in this repo.

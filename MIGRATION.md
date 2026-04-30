@@ -69,13 +69,13 @@ This fixed real-device classification issues on Stevie (Dash), allowing normal D
 
 Calibration/probe scripts were added to make behavior repeatable:
 
-- `connect_dash_bleak_smoketest.py`
-- `connect_dash_smoketest.py`
-- `tests_rawMotionProbe.py`
-- `tests_reverseProbe.py`
-- `tests_translationCalibration.py`
-- `tests_spinCalibration.py`
-- `tests_stevieTests.py`
+- `robot_validation/smoke/connect_dash_bleak_smoketest.py`
+- `robot_validation/smoke/connect_dash_smoketest.py`
+- `robot_validation/probes/tests_rawMotionProbe.py`
+- `robot_validation/probes/tests_reverseProbe.py`
+- `robot_validation/calibration/tests_translationCalibration.py`
+- `robot_validation/calibration/tests_spinCalibration.py`
+- `robot_validation/scenarios/tests_stevieTests.py`
 
 Current tuned defaults used in Stevie-oriented choreography/testing:
 

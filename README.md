@@ -85,7 +85,7 @@ python robot_validation/smoke/connect_dash_bleak_smoketest.py --connect-name "St
 
 ## Web UI (Dash Kid Controller)
 
-This repo includes a browser-based controller in `dash_kid_ui.py` with:
+This repo includes a browser-based controller in `robot_validation/ui/dash_kid_ui.py` with:
 
 - connect / disconnect
 - one-tap movement commands
@@ -96,7 +96,7 @@ This repo includes a browser-based controller in `dash_kid_ui.py` with:
 Start it from the repository root (inside your activated virtualenv):
 
 ```bash
-python dash_kid_ui.py
+python robot_validation/ui/dash_kid_ui.py
 ```
 
 Then open:
@@ -106,7 +106,7 @@ Then open:
 Optional host/port override:
 
 ```bash
-python dash_kid_ui.py --host 0.0.0.0 --port 8765
+python robot_validation/ui/dash_kid_ui.py --host 0.0.0.0 --port 8765
 ```
 
 

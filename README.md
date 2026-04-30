@@ -1,10 +1,10 @@
-# WonderPy
+# WonderPy3
 
 **Canonical source code:** **[github.com/chopley/WonderPy3](https://github.com/chopley/WonderPy3)** (issues & pull requests belong there.)
 
-WonderPy is a Python package that talks to Wonder Workshop robots **Dash**, **Dot**, and **Cue**: commands and sensors are exposed at a granular level. Examples and tutorials live in **[WonderPyExamples](https://github.com/playi/WonderPyExamples)** (upstream; still usable).
+WonderPy3 is a Python package that talks to Wonder Workshop robots **Dash**, **Dot**, and **Cue**: commands and sensors are exposed at a granular level. Examples and tutorials live in **[WonderPyExamples](https://github.com/playi/WonderPyExamples)** (upstream; still usable).
 
-This codebase descends from Wonder Workshop’s open-source **[WonderPy](https://github.com/playi/WonderPy)** (little recent upstream activity). The **MIT License** applies; see [`LICENSE`](LICENSE).
+This codebase is an actively maintained **Python 3 port and continuation** of Wonder Workshop’s open-source **[WonderPy](https://github.com/playi/WonderPy)**, which was originally Python 2-era and has little recent upstream activity. The **MIT License** applies; see [`LICENSE`](LICENSE).
 
 Comfort with Python and the terminal is assumed.
 
@@ -53,7 +53,8 @@ source venv/bin/activate
 
 ### Install this library from GitHub
 
-Use the **`WonderPy3`** repository (maintained fork), not PyPI installs that may lag or omit your changes:
+Use the **`WonderPy3`** repository (maintained fork), not PyPI installs that may lag or omit your changes.
+The distribution/import name remains `WonderPy` for compatibility:
 
 ```bash
 pip install "WonderPy @ git+https://github.com/chopley/WonderPy3.git@master"
@@ -80,6 +81,32 @@ Quick connectivity probe:
 
 ```bash
 python connect_dash_bleak_smoketest.py --connect-name "Stevie" --connect-ask
+```
+
+## Web UI (Dash Kid Controller)
+
+This repo includes a browser-based controller in `dash_kid_ui.py` with:
+
+- connect / disconnect
+- one-tap movement commands
+- drawable path following with distance calibration and max-travel limits
+- optional must-hit markers on the canvas
+- encoder before/after logging per run
+
+Start it from the repository root (inside your activated virtualenv):
+
+```bash
+python dash_kid_ui.py
+```
+
+Then open:
+
+- `http://127.0.0.1:8765`
+
+Optional host/port override:
+
+```bash
+python dash_kid_ui.py --host 0.0.0.0 --port 8765
 ```
 
 

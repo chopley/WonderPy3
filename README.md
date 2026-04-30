@@ -113,6 +113,7 @@ python dash_kid_ui.py --host 0.0.0.0 --port 8765
 ## Documentation
 
 - [Robot reference (`doc/WonderPy.md`)](doc/WonderPy.md) *(also on [GitHub](https://github.com/chopley/WonderPy3/blob/master/doc/WonderPy.md))*  
+- [Migration notes (`MIGRATION.md`)](MIGRATION.md) *(Python 2 -> Python 3 + Apple Silicon migration details)*  
 - **[WonderPyExamples](https://github.com/playi/WonderPyExamples)** — tutorials strongly recommended  
 
 Download the hello-world snippet and run inside your activated venv:
